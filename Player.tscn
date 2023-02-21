@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Player.gd" type="Script" id=1]
+[ext_resource path="res://dot.png" type="Texture" id=2]
+
+[node name="Player" type="Node2D"]
+position = Vector2( 517, 298 )
+script = ExtResource( 1 )
+
+[node name="Body" type="Position2D" parent="."]
+
+[node name="Sprite" type="Sprite" parent="Body"]
+texture = ExtResource( 2 )
+
+[node name="Node" type="Node" parent="."]
+
+[node name="Label_R" type="Label" parent="Node"]
+text = "0"
+uppercase = true
