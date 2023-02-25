@@ -9,19 +9,26 @@ const LEG_SCENE_PATH = "res://Leg.tscn"
 var leg_scene = preload(LEG_SCENE_PATH)
 
 
-onready var body = $Body
+onready var body = $BodyTop
+onready var body_bottom = $BodyBottom
+
+var body_size
 
 var max_speed = 400
 var acceleration = 1000
 var friction = 0.5
 var velocity = Vector2()
 
+	
+var body_rotation_speed = 10.0
+var body_rotation_quat = Quat()
+
 
 var legs
-var legs_position=[[100, 0], [70.7107, 70.7107],
- [0, 100], [-70.7107, 70.7107],
- [-100, 0], [-70.7107, -70.7107],
- [0, -100], [70.7107, -70.7107]]
+var legs_position=[[70.7107, 70.7107],
+ [-70.7107, 70.7107],
+ [-70.7107, -70.7107],
+ [70.7107, -70.7107]]
 
 const LEG_MOVE_TIME = 0.1  # Time to wait between leg movements (in seconds)
 var time_since_last_leg_move = 0
@@ -30,6 +37,7 @@ onready var label = $Node/Label_R
 
 
 func _ready():
+	body_size = $BodyBottom.position.y
 	
 	for leg_position in legs_position:
 		var leg = leg_scene.instance()
@@ -75,10 +83,12 @@ func too_close(dist):
 
 func too_far(dist):
 	return dist > MAX_LEG_DISTANCE
+	
+
 
 func move(delta):
 	var input_vector = get_input()
-	
+
 	velocity = velocity.move_toward(input_vector.normalized() * max_speed, acceleration * delta)
 
 	# apply friction
@@ -87,11 +97,34 @@ func move(delta):
 
 	body.global_position += velocity * delta
 
+	if body_bottom.global_position.distance_to(body.global_position) > body_size:
+		body_bottom.global_position = body_bottom.global_position.move_toward(body.global_position, 3)
+
 	body.global_position.x = clamp(body.global_position.x, 0, Globals.screen_size.x)
 	body.global_position.y = clamp(body.global_position.y, 0, Globals.screen_size.y)
 
+	# Rotate towards the input direction
+	if input_vector != Vector2():
+		var target_rotation = input_vector.angle()
+		var rotation_difference = target_rotation - body.rotation
+		var shortest_rotation = fmod((rotation_difference + PI), TAU) - PI
+		body.rotation += shortest_rotation * delta * body_rotation_speed
+
+
+
+
+
+
+
+#	# Rotate towards the input direction
+#	if input_vector != Vector2():
+#		var target_rotation = atan2(input_vector.y, input_vector.x)
+#		var target_quat = Quat(Vector3(0, 0, target_rotation))
+#		body_rotation_quat = body_rotation_quat.slerp(target_quat, body_rotation_speed * delta)
+#		body.rotation = body_rotation_quat.get_euler().z
+
 func get_input():
-	var input_vector=Vector2()
+	var input_vector = Vector2()
 	if Input.is_action_pressed("ui_right"):
 		input_vector.x += 1
 	if Input.is_action_pressed("ui_left"):
@@ -101,6 +134,3 @@ func get_input():
 	if Input.is_action_pressed("ui_up"):
 		input_vector.y -= 1
 	return input_vector
-
-
-
