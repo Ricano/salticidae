@@ -6,33 +6,25 @@
 [node name="Leg" type="Position2D" groups=["legs"]]
 script = ExtResource( 1 )
 
-[node name="Skeleton2D" type="Skeleton2D" parent="."]
-
-[node name="Bone1" type="Bone2D" parent="Skeleton2D"]
-rest = Transform2D( 1, 0, 0, 1, 0, 0 )
-default_length = 80.0
-__meta__ = {
-"_edit_bone_": true,
-"_edit_ik_": true
-}
-
-[node name="Bone2" type="Bone2D" parent="Skeleton2D/Bone1"]
-position = Vector2( 80, 0 )
-rest = Transform2D( 1, 0, 0, 1, 80, 0 )
-default_length = 80.0
-__meta__ = {
-"_edit_bone_": true
-}
-
-[node name="Tip" type="Bone2D" parent="Skeleton2D/Bone1/Bone2"]
-position = Vector2( 80, 0 )
-rest = Transform2D( 1, 0, 0, 1, 80, 0 )
-default_length = 80.0
-__meta__ = {
-"_edit_bone_": true
-}
-
 [node name="Sprite" type="Sprite" parent="."]
 modulate = Color( 1, 0, 0, 1 )
 scale = Vector2( 0.2, 0.2 )
+texture = ExtResource( 2 )
+
+[node name="Sprite2" type="Sprite" parent="."]
+self_modulate = Color( 0.517647, 0.901961, 0.227451, 1 )
+position = Vector2( 15, 0 )
+scale = Vector2( 0.375, 0.125 )
+texture = ExtResource( 2 )
+
+[node name="Sprite3" type="Sprite" parent="."]
+self_modulate = Color( 0.517647, 0.901961, 0.227451, 1 )
+position = Vector2( 43, 0 )
+scale = Vector2( 0.375, 0.125 )
+texture = ExtResource( 2 )
+
+[node name="Sprite4" type="Sprite" parent="."]
+self_modulate = Color( 0.517647, 0.901961, 0.227451, 1 )
+position = Vector2( 71, 0 )
+scale = Vector2( 0.375, 0.125 )
 texture = ExtResource( 2 )

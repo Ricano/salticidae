@@ -1,0 +1,54 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://Leg3.gd" type="Script" id=1]
+
+[sub_resource type="RectangleShape2D" id=1]
+extents = Vector2( 418, 224 )
+
+[node name="Leg3" type="Node2D"]
+position = Vector2( 163, 114 )
+script = ExtResource( 1 )
+
+[node name="Skeleton2D" type="Skeleton2D" parent="."]
+
+[node name="Bone2D" type="Bone2D" parent="Skeleton2D"]
+rest = Transform2D( 1, 0, 0, 1, 0, 0 )
+default_length = 60.0
+__meta__ = {
+"_edit_bone_": true,
+"_edit_ik_": true
+}
+
+[node name="Bone2D" type="Bone2D" parent="Skeleton2D/Bone2D"]
+position = Vector2( 60, 0 )
+rest = Transform2D( 1, 0, 0, 1, 60, 0 )
+default_length = 60.0
+__meta__ = {
+"_edit_bone_": true
+}
+
+[node name="Tip" type="Bone2D" parent="Skeleton2D/Bone2D/Bone2D"]
+position = Vector2( 60, 0 )
+rest = Transform2D( 1, 0, 0, 1, 60, 0 )
+default_length = 60.0
+__meta__ = {
+"_edit_bone_": true
+}
+
+[node name="ColorRect" type="ColorRect" parent="Skeleton2D/Bone2D/Bone2D/Tip"]
+margin_right = 56.0
+margin_bottom = 3.0
+
+[node name="ColorRect" type="ColorRect" parent="Skeleton2D/Bone2D/Bone2D"]
+margin_right = 56.0
+margin_bottom = 6.0
+
+[node name="ColorRect" type="ColorRect" parent="Skeleton2D/Bone2D"]
+margin_right = 55.0
+margin_bottom = 4.0
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2( 408, 214 )
+shape = SubResource( 1 )

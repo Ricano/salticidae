@@ -19,11 +19,9 @@ var acceleration = 1000
 var friction = 0.5
 var velocity = Vector2()
 
-	
 var body_rotation_speed = 10.0
-var body_rotation_quat = Quat()
 
-
+signal is_moving
 var legs
 var legs_position=[[70.7107, 70.7107],
  [-70.7107, 70.7107],
@@ -43,6 +41,7 @@ func _ready():
 		var leg = leg_scene.instance()
 		leg.offset = Vector2(leg_position[0], leg_position[1])
 		leg.position=leg.offset
+		leg.show_behind_parent=true
 		add_child(leg)
 
 	legs = get_tree().get_nodes_in_group("legs")
@@ -53,12 +52,15 @@ func _ready():
 func _process(delta):
 	move(delta)
 	
-	# Only move legs if enough time has passed since the last move
 	for leg in legs:
+		strech_leg(leg)
+		
 		var distance = leg.global_position.distance_to(body.global_position)
+		# Only move legs if enough time has passed since the last move
 		if too_far(distance) or too_close(distance) or is_leg_on_wrong_side(leg):
 			if time_since_last_leg_move >= LEG_MOVE_TIME:
 				leg.global_position = leg.global_position.linear_interpolate((body.global_position + leg.offset),1)
+				leg.look_at(body.global_position)
 				time_since_last_leg_move = 0
 			else:
 				time_since_last_leg_move += delta
@@ -86,15 +88,25 @@ func too_far(dist):
 	
 
 
+func strech_leg(leg):
+	leg.look_at(body.global_position)
+	var distance = leg.global_position.distance_to(body.global_position)
+	var bones = leg.get_children()
+	for i in len(bones):
+		if bones[i].name=="Sprite":
+			continue
+		bones[i].position.x = 20 + distance/5 * i 
+	
+
 func move(delta):
 	var input_vector = get_input()
 
 	velocity = velocity.move_toward(input_vector.normalized() * max_speed, acceleration * delta)
 
-	# apply friction
-	if input_vector == Vector2():
+	# apply friction if no input
+	if input_vector == Vector2.ZERO:
 		velocity *= 1.0 - friction * delta
-
+		
 	body.global_position += velocity * delta
 
 	if body_bottom.global_position.distance_to(body.global_position) > body_size:
@@ -104,27 +116,16 @@ func move(delta):
 	body.global_position.y = clamp(body.global_position.y, 0, Globals.screen_size.y)
 
 	# Rotate towards the input direction
-	if input_vector != Vector2():
+	if input_vector != Vector2.ZERO:
 		var target_rotation = input_vector.angle()
 		var rotation_difference = target_rotation - body.rotation
 		var shortest_rotation = fmod((rotation_difference + PI), TAU) - PI
 		body.rotation += shortest_rotation * delta * body_rotation_speed
+		emit_signal("is_moving")
 
-
-
-
-
-
-
-#	# Rotate towards the input direction
-#	if input_vector != Vector2():
-#		var target_rotation = atan2(input_vector.y, input_vector.x)
-#		var target_quat = Quat(Vector3(0, 0, target_rotation))
-#		body_rotation_quat = body_rotation_quat.slerp(target_quat, body_rotation_speed * delta)
-#		body.rotation = body_rotation_quat.get_euler().z
 
 func get_input():
-	var input_vector = Vector2()
+	var input_vector = Vector2.ZERO
 	if Input.is_action_pressed("ui_right"):
 		input_vector.x += 1
 	if Input.is_action_pressed("ui_left"):

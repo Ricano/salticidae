@@ -12,3 +12,17 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass
+
+func on_Player_is_moving(body):
+	strech_leg(body)
+
+func strech_leg(body):
+	look_at(body.global_position)
+	var distance = global_position.distance_to(body.global_position)
+	var bones = get_children()
+	for i in len(bones):
+		if bones[i].name=="Sprite":
+			continue
+		bones[i].position.x = 20 + distance/5 * i
+		
+
