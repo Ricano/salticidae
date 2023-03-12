@@ -1,7 +1,7 @@
 extends Node2D
 
-const MAX_LEG_DISTANCE = 230
-const MIN_LEG_DISTANCE = 30
+const  MAX_LEG_DISTANCE = 190
+const MIN_LEG_DISTANCE = 40
 
 const LEG_SCENE_PATH = "res://Leg.tscn"
 
@@ -10,7 +10,11 @@ var leg_scene = preload(LEG_SCENE_PATH)
 
 
 onready var body = $BodyTop
-onready var body_bottom = $BodyBottom
+
+enum SCREEN_MODE { CLAMP, WARP }
+export(SCREEN_MODE) var screen_mode = SCREEN_MODE.CLAMP
+
+onready var shell = $BodyBottom/Shell
 
 var body_size
 
@@ -21,7 +25,6 @@ var velocity = Vector2()
 
 var body_rotation_speed = 10.0
 
-signal is_moving
 var legs
 var legs_position=[[70.7107, 70.7107],
  [-70.7107, 70.7107],
@@ -35,7 +38,6 @@ onready var label = $Node/Label_R
 
 
 func _ready():
-	body_size = $BodyBottom.position.y
 	
 	for leg_position in legs_position:
 		var leg = leg_scene.instance()
@@ -43,6 +45,8 @@ func _ready():
 		leg.position=leg.offset
 		leg.show_behind_parent=true
 		add_child(leg)
+		
+
 
 	legs = get_tree().get_nodes_in_group("legs")
 	label.text = str(0)
@@ -52,18 +56,22 @@ func _ready():
 func _process(delta):
 	move(delta)
 	
+	
 	for leg in legs:
-		strech_leg(leg)
 		
 		var distance = leg.global_position.distance_to(body.global_position)
 		# Only move legs if enough time has passed since the last move
 		if too_far(distance) or too_close(distance) or is_leg_on_wrong_side(leg):
 			if time_since_last_leg_move >= LEG_MOVE_TIME:
-				leg.global_position = leg.global_position.linear_interpolate((body.global_position + leg.offset),1)
+				
+				leg.global_position = body.global_position + leg.offset
 				leg.look_at(body.global_position)
 				time_since_last_leg_move = 0
 			else:
 				time_since_last_leg_move += delta
+		strech_leg(leg)
+		
+		
 		
 func is_leg_on_wrong_side(leg):
 	# if is right leg and it's on the left
@@ -109,11 +117,10 @@ func move(delta):
 		
 	body.global_position += velocity * delta
 
-	if body_bottom.global_position.distance_to(body.global_position) > body_size:
-		body_bottom.global_position = body_bottom.global_position.move_toward(body.global_position, 3)
+	clamp_or_warp(screen_mode)
+	
+		
 
-	body.global_position.x = clamp(body.global_position.x, 0, Globals.screen_size.x)
-	body.global_position.y = clamp(body.global_position.y, 0, Globals.screen_size.y)
 
 	# Rotate towards the input direction
 	if input_vector != Vector2.ZERO:
@@ -121,9 +128,23 @@ func move(delta):
 		var rotation_difference = target_rotation - body.rotation
 		var shortest_rotation = fmod((rotation_difference + PI), TAU) - PI
 		body.rotation += shortest_rotation * delta * body_rotation_speed
-		emit_signal("is_moving")
 
-
+func clamp_or_warp(screen_mode):
+	if screen_mode == SCREEN_MODE.CLAMP:
+		# cant get out of screen
+		body.global_position.x = clamp(body.global_position.x, 0, Globals.screen_size.x)
+		body.global_position.y = clamp(body.global_position.y, 0, Globals.screen_size.y)
+	else:
+		# warp to the other side
+		if body.global_position.x > Globals.screen_size.x + 200:
+			body.global_position.x = 0
+		if body.global_position.y > Globals.screen_size.y + 200:
+			body.global_position.y = 0
+		if body.global_position.x < 0 - 200:
+			body.global_position.x = Globals.screen_size.x
+		if body.global_position.y < 0 - 200:
+			body.global_position.y = Globals.screen_size.y
+			
 func get_input():
 	var input_vector = Vector2.ZERO
 	if Input.is_action_pressed("ui_right"):
