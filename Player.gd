@@ -1,6 +1,6 @@
 extends Node2D
 
-const  MAX_LEG_DISTANCE = 190
+const  MAX_LEG_DISTANCE = 170
 const MIN_LEG_DISTANCE = 40
 
 const LEG_SCENE_PATH = "res://Leg.tscn"
@@ -118,15 +118,12 @@ func move(delta):
 	body.global_position += velocity * delta
 
 	clamp_or_warp(screen_mode)
-	
-		
-
 
 	# Rotate towards the input direction
 	if input_vector != Vector2.ZERO:
 		var target_rotation = input_vector.angle()
-		var rotation_difference = target_rotation - body.rotation
-		var shortest_rotation = fmod((rotation_difference + PI), TAU) - PI
+		var rotation_difference = fmod(target_rotation - body.rotation + PI, TAU) - PI
+		var shortest_rotation = atan2(sin(rotation_difference), cos(rotation_difference))
 		body.rotation += shortest_rotation * delta * body_rotation_speed
 
 func clamp_or_warp(screen_mode):
